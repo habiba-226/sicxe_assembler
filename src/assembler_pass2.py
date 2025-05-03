@@ -1,43 +1,4 @@
-import re
-
-# Op codes for SIC/XE instructions
-op_codes = {
-    # Format 1
-    'FIX': '0xC4', 'FLOAT': '0xC0', 'HIO': '0xF4', 'NORM': '0xC8', 
-    'SIO': '0xF0', 'TIO': '0xF8',
-    
-    # Format 2
-    'ADDR': '0x90', 'CLEAR': '0xB4', 'COMPR': '0xA0', 'DIVR': '0x9C', 
-    'MULR': '0x98', 'RMO': '0xAC', 'SHIFTL': '0xA4', 'SHIFTR': '0xA8', 
-    'SUBR': '0x94', 'SVC': '0xB0', 'TIXR': '0xB8',
-    
-    # Format 3/4
-    'ADD': '0x18', 'COMP': '0x28', 'JEQ': '0x30', 'JLT': '0x38', 
-    'JSUB': '0x48', 'LDA': '0x00', 'LDB': '0x68', 'RSUB': '0x4C', 
-    'STA': '0x0C', 'STL': '0x14', 'TIX': '0x2C'
-}
-
-# Register numbers
-registers = {
-    'A': 0, 'X': 1, 'L': 2, 'B': 3, 'S': 4, 'T': 5, 'F': 6
-}
-
-instruction_size = {
-    # Format 1
-    'FIX': 1, 'FLOAT': 1, 'HIO': 1, 'NORM': 1, 'SIO': 1, 'TIO': 1,
-
-    # Format 2
-    'ADDR': 2, 'CLEAR': 2, 'COMPR': 2, 'DIVR': 2, 'MULR': 2,
-    'RMO': 2, 'SHIFTL': 2, 'SHIFTR': 2, 'SUBR': 2, 'SVC': 2, 'TIXR': 2,
-
-    # Format 3 (default to 3 if not listed)
-    'LDA': 3, 'STA': 3, 'STL': 3, 'LDB': 3, 'COMP': 3, 'JEQ': 3,
-    'JSUB': 3, 'RSUB': 3, 'ADD': 3, 'JLT': 3, 'TIX': 3,
-
-    # Directives
-    'START': 0, 'BASE': 0, 'END': 0,
-    'RESW': 3, 'RESB': 1, 'BYTE': 1, 'WORD': 3
-}
+from src.instructions import op_codes, registers, instruction_size
 
 def load_symbol_table(file_path):
     symbol_table = {}
@@ -302,7 +263,7 @@ def pass2(intermediate_file, location_counter_file, symbol_table_file):
         object_codes.append(object_code)
     
     # Write object codes to output file
-    with open('out_pass2.txt', 'w') as f:
+    with open('data/out_pass2.txt', 'w') as f:
         for code in object_codes:
             f.write(f"{code}\n")
     
@@ -402,7 +363,7 @@ def generate_htme_records(intermediate_lines, location_counter, object_codes, sy
     htme_records.append(f"E{first_exec_addr:06X}")
     
     # Write HTME records to output file
-    with open('HTME.txt', 'w') as f:
+    with open('data/HTME.txt', 'w') as f:
         for record in htme_records:
             f.write(f"{record}\n")
 

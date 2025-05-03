@@ -1,19 +1,4 @@
-instruction_size = {
-    # Format 1
-    'FIX': 1, 'FLOAT': 1, 'HIO': 1, 'NORM': 1, 'SIO': 1, 'TIO': 1,
-
-    # Format 2
-    'ADDR': 2, 'CLEAR': 2, 'COMPR': 2, 'DIVR': 2, 'MULR': 2,
-    'RMO': 2, 'SHIFTL': 2, 'SHIFTR': 2, 'SUBR': 2, 'SVC': 2, 'TIXR': 2,
-
-    # Format 3 (default to 3 if not listed)
-    'LDA': 3, 'STA': 3, 'STL': 3, 'LDB': 3, 'COMP': 3, 'JEQ': 3,
-    'JSUB': 3, 'RSUB': 3, 'ADD': 3, 'JLT': 3, 'TIX': 3,
-
-    # Directives
-    'START': 0, 'BASE': 0, 'END': 0,
-    'RESW': 3, 'RESB': 1, 'BYTE': 1, 'WORD': 3
-}
+from src.instructions import instruction_size
 
 symbol_table = {}
 
@@ -110,18 +95,18 @@ def pass1(input_file):
 
         loc += get_size(instruction, operand)
 
-    with open('intermediate.txt', 'w', encoding='utf-8') as f:
+    with open('data/intermediate.txt', 'w', encoding='utf-8') as f:
         for line in intermediate:
             f.write(line + '\n')
 
-    with open('out_pass1.txt', 'w', encoding='utf-8') as f:
+    with open('data/out_pass1.txt', 'w', encoding='utf-8') as f:
         for lc in location_counter:
             f.write(lc + '\n')
 
-    with open('symbTable.txt', 'w', encoding='utf-8') as f:
+    with open('data/symbTable.txt', 'w', encoding='utf-8') as f:
         for symbol, addr in symbol_table.items():
             f.write(f'{symbol}\t{addr}\n')
 
 
 if __name__ == "__main__":
-    pass1('in.txt')
+    pass1('data/in.txt')
