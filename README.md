@@ -12,7 +12,8 @@ sicxe_assembler_corrected1/
 from Pass 1              
 │   ├── intermediate.txt    # Output from Pass 1
 │   ├── out_pass1.txt       # Location counters 
-│   ├── symbTable.txt       # Symbol table from from Pass 2
+│   ├── symbTable.txt       # Symbol table 
+from from Pass 2
 │   └── out_pass2.obj          # Final object code
 │   └── HTME.obj          # HTME records
 │
