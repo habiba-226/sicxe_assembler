@@ -226,7 +226,7 @@ def pass2(intermediate_file, location_counter_file, symbol_table_file):
     
     # Prepare output
     object_codes = []
-    
+    listing_lines = []
     # Track BASE register value
     base_address = None
     
@@ -261,7 +261,10 @@ def pass2(intermediate_file, location_counter_file, symbol_table_file):
         current_address = location_counter[i] if i < len(location_counter) else "0000"
         object_code = generate_object_code(instruction, operand, symbol_table, current_address, base_address)
         object_codes.append(object_code)
-    
+
+                # Create listing line
+        listing_line = f"{current_address}\t{label}\t{instruction}\t{operand}\t{object_code}"
+        listing_lines.append(listing_line)
     # Write object codes to output file
     with open('data/out_pass2.txt', 'w') as f:
         for code in object_codes:

@@ -1,4 +1,4 @@
-# filepath: sicxe_assembler_corrected1/src/instruction_set.py
+# filepath: src/instructions.py
 
 op_codes = {
     # Format 1
@@ -11,9 +11,10 @@ op_codes = {
     'SUBR': '0x94', 'SVC': '0xB0', 'TIXR': '0xB8',
     
     # Format 3/4
-    'ADD': '0x18', 'COMP': '0x28', 'JEQ': '0x30', 'JLT': '0x38', 
-    'JSUB': '0x48', 'LDA': '0x00', 'LDB': '0x68', 'RSUB': '0x4C', 
-    'STA': '0x0C', 'STL': '0x14', 'TIX': '0x2C'
+    'ADD': '0x18', 'COMP': '0x28', 'J': '0x3C', 'JEQ': '0x30', 'JLT': '0x38', 
+    'JSUB': '0x48', 'LDA': '0x00', 'LDB': '0x68', 'LDCH': '0x50', 'LDL': '0x08', 'LDX': '0x04', 
+    'RD': '0xD8', 'RSUB': '0x4C', 'STA': '0x0C', 'STCH': '0x54', 'STL': '0x14',
+    'STX': '0x10', 'TD': '0xE0', 'TIX': '0x2C', 'WD': '0xDC'
 }
 
 instruction_size = {
@@ -25,8 +26,9 @@ instruction_size = {
     'RMO': 2, 'SHIFTL': 2, 'SHIFTR': 2, 'SUBR': 2, 'SVC': 2, 'TIXR': 2,
 
     # Format 3 (default to 3 if not listed)
-    'LDA': 3, 'STA': 3, 'STL': 3, 'LDB': 3, 'COMP': 3, 'JEQ': 3,
-    'JSUB': 3, 'RSUB': 3, 'ADD': 3, 'JLT': 3, 'TIX': 3,
+    'ADD': 3, 'COMP': 3, 'J': 3, 'JEQ': 3, 'JLT': 3, 'JSUB': 3, 
+    'LDA': 3, 'LDB': 3, 'LDCH': 3, 'LDL': 3, 'LDX': 3, 'RD': 3, 'RSUB': 3, 
+    'STA': 3, 'STCH': 3, 'STL': 3, 'STX': 3, 'TD': 3, 'TIX': 3, 'WD': 3,
 
     # Directives
     'START': 0, 'BASE': 0, 'END': 0,

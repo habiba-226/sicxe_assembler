@@ -1,14 +1,27 @@
-1 SUM START 0000
-2 FIRST CLEAR X
-3       LDA #0
-4       +LDB #TOTAL
-5       BASE TOTAL
-6 LOOP ADD TABLE,X
-7       TIX COUNT
-8       JLT LOOP
-9       STA TOTAL
-10      RSUB
-11 COUNT RESW 1
-12 TABLE RESW 2000
-13 TOTAL RESW 1
-14 END FIRST
+COPY START 1000
+FIRST STL RETADR
+    CLEAR X
+    LDA #3         ; Immediate addressing with constant
+    LDB #LENGTH    ; Immediate addressing with symbol (Format 3)
+    BASE LENGTH     ; Set base register
+    +JSUB RDREC      ; Format 4, extended call
+    LDA @BUFFER    ; Indirect addressing
+    LDX LENGTH,X   ; Indexed addressing
+    COMP ZERO       ; PC-relative (if in range)
+    JEQ ENDFIL
+    TIXR X          ; Format 2
+    RSUB               ; Format 3
+    TIO                ; Format 1
+ENDFIL LDA EOF
+WLOOP TD OUTPUT
+    STA BUFFER
+    HIO                ; Format 1
+    SIO                ; Format 1
+RETADR RESW    1
+LENGTH WORD    3
+ZERO   WORD    0
+BUFFER RESB    4096
+EOF BYTE    C'EOF'
+RDREC RSUB
+OUTPUT BYTE X'05'
+    END START
