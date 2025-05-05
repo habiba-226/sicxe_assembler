@@ -40,7 +40,7 @@ from Pass 1
 
 ## Usage Guidelines
 
-- Place your assembly language source files in the `src/data` directory.
+- Place your SICXE code source file in the `src/data/in.txt`.
 - The assembler will generate the intermediate file, location counter, symbol table, object code, and HTME records automatically.
 - Output files will be saved in the `src/data` directory.
 
