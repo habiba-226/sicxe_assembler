@@ -265,11 +265,19 @@ def pass2(intermediate_file, location_counter_file, symbol_table_file):
                 # Create listing line
         listing_line = f"{current_address}\t{label}\t{instruction}\t{operand}\t{object_code}"
         listing_lines.append(listing_line)
+
     # Write object codes to output file
     with open('data/out_pass2.txt', 'w') as f:
         for code in object_codes:
             f.write(f"{code}\n")
-    
+
+    # Write listing lines to listing.txt
+    with open('data/listing.txt', 'w') as f:
+        f.write("Address\tLabel\tInstruction\tOperand\tObject Code\n")
+        f.write("-" * 60 + "\n")
+        for line in listing_lines:
+            f.write(f"{line}\n")
+
     # Now generate HTME records (we'll implement this in the next step)
     generate_htme_records(intermediate_lines, location_counter, object_codes, symbol_table)
 
@@ -284,6 +292,7 @@ def generate_htme_records(intermediate_lines, location_counter, object_codes, sy
     starting_address = ""
     ending_address = ""
     text_records = []
+    modification_records = []  # New list to store modification records
     current_text_record = {"address": "", "length": 0, "codes": []}
     
     # Find program name and starting address
@@ -292,10 +301,60 @@ def generate_htme_records(intermediate_lines, location_counter, object_codes, sy
         program_name = first_line[0]
         starting_address = location_counter[0]
     
-    # Process each line to generate text records
+    # Process each line to generate text records and identify modification records
     for i, (line, lc, obj_code) in enumerate(zip(intermediate_lines, location_counter, object_codes)):
         tokens = line.split()
-        instruction = tokens[1] if len(tokens) > 1 else ""
+        
+        # Parse the line
+        if len(tokens) == 3:
+            label, instruction, operand = tokens
+        elif len(tokens) == 2:
+            if tokens[0].upper() in instruction_size or tokens[0].startswith('+'):
+                label = ""
+                instruction, operand = tokens
+            else:
+                label, instruction = tokens
+                operand = ""
+        elif len(tokens) == 1:
+            label = ""
+            instruction = tokens[0]
+            operand = ""
+        else:
+            continue  # Skip invalid lines
+        
+        instruction = instruction.upper()
+        
+        # Check for format 4 instructions (starting with +)
+        if instruction.startswith('+'):
+            # Process format 4 instruction for modification records
+            if operand:
+                # Check if it's immediate addressing with a numeric value
+                if operand.startswith('#'):
+                    stripped_operand = operand[1:]  # Remove the # character
+                    
+                    # Check if it's a numeric value
+                    is_numeric = False
+                    if stripped_operand.isdigit() or (stripped_operand.startswith('-') and stripped_operand[1:].isdigit()):
+                        is_numeric = True
+                    elif stripped_operand.startswith('0x') or stripped_operand.startswith('0X'):
+                        try:
+                            int(stripped_operand, 16)
+                            is_numeric = True
+                        except ValueError:
+                            is_numeric = False
+                    
+                    # Only create M record if operand is not numeric
+                    if not is_numeric:
+                        # Calculate address for modification (instruction address + 1)
+                        mod_address = int(lc, 16) + 1
+                        # Standard length for modification is 5 half-bytes (20 bits)
+                        mod_length = "05"
+                        modification_records.append(f"M{mod_address:06X}{mod_length}")
+                else:
+                    # For non-immediate format 4 instructions, always create M record
+                    mod_address = int(lc, 16) + 1
+                    mod_length = "05"
+                    modification_records.append(f"M{mod_address:06X}{mod_length}")
         
         # Skip directives that don't generate code
         if instruction.upper() in ['START', 'END', 'BASE']:
@@ -353,6 +412,9 @@ def generate_htme_records(intermediate_lines, location_counter, object_codes, sy
             object_code = ''.join(record["codes"])
             htme_records.append(f"T{address}{length:02X}{object_code}")
     
+    # Modification records (M)
+    htme_records.extend(modification_records)
+    
     # End record (E)
     first_executable = starting_address
     for i, line in enumerate(intermediate_lines):
@@ -369,7 +431,7 @@ def generate_htme_records(intermediate_lines, location_counter, object_codes, sy
     with open('data/HTME.txt', 'w') as f:
         for record in htme_records:
             f.write(f"{record}\n")
-
+            
 if __name__ == "__main__":
     # Run pass 2
     pass2('intermediate.txt', 'out_pass1.txt', 'symbTable.txt')
