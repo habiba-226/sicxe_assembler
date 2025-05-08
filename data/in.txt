@@ -1,28 +1,29 @@
-COPY START 1000
-FIRST STL RETADR
-    CLEAR X
-    LDA #3         ; Immediate addressing with constant
-    +LDB #LENGTH    ; Immediate addressing with symbol (Format 4)
-    BASE LENGTH     ; Set base register
-    +JSUB RDREC      ; Format 4, extended call
-    LDA @BUFFER    ; Indirect addressing
-    LDX LENGTH,X   ; Indexed addressing
-    COMP ZERO       ; PC-relative (if in range)
-    JEQ ENDFIL
-    +LDA @BUFFER   ; Format 4 with indirect operand (needs M record)
-    TIXR X          ; Format 2
-    +LDA #2000       ; Format 4 with immediate constant (noM record)
-    RSUB               ; Format 3
-    TIO                ; Format 1
-WLOOP TD OUTPUT
-    STA BUFFER
-    HIO                ; Format 1
-    SIO                ; Format 1
-OUTPUT BYTE X'05'
-RETADR RESW    1
-LENGTH WORD    3
-ZERO   WORD    0
-BUFFER RESB    4096
-EOF BYTE    C'EOF'
-RDREC RSUB
-    END START
+1 COPY START 1000
+2 FIRST STL RETADR
+3    CLEAR X
+4    LDA #3         ; Immediate addressing with constant
+5    +LDB #LENGTH    ; Immediate addressing with symbol (Format 4)
+6    BASE EOF     ; Set base register
+7    +JSUB RDREC      ; Format 4, extended call
+8    LDA @BUFFER    ; Indirect addressing
+9    LDX LENGTH,X   ; Indexed addressing
+10    COMP ZERO       ; PC-relative (if in range)
+11    JEQ ENDFIL
+12    +LDA @BUFFER   ; Format 4 with indirect operand (needs M record)
+13    TIXR X          ; Format 2
+14    +LDA #2000       ; Format 4 with immediate constant (noM record)
+15    LDA RDREC        ; Base-relative
+16    RSUB               ; Format 3
+17    TIO                ; Format 1
+18 WLOOP TD OUTPUT
+19    STA BUFFER
+20    HIO                ; Format 1
+21    SIO                ; Format 1
+22 OUTPUT BYTE X'05'
+23 RETADR RESW    1
+24 LENGTH WORD    3
+25 ZERO   WORD    0
+26 BUFFER RESB    4096
+27 EOF BYTE    C'EOF'
+28 RDREC RSUB
+29    END START
