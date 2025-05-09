@@ -346,7 +346,7 @@ def generate_htme_records(intermediate_lines, location_counter, object_codes):
                     # For non-immediate format 4 instructions, always create M record
                     mod_address = int(lc, 16) + 1
                     mod_length = "05"
-                    modification_records.append(f"M{mod_address:06X}{mod_length}")
+                    modification_records.append(f"M^{mod_address:06X}^{mod_length}")
         
         # Skip directives that don't generate code
         if instruction.upper() in ['START', 'END', 'BASE']:
@@ -393,16 +393,18 @@ def generate_htme_records(intermediate_lines, location_counter, object_codes):
     htme_records = []
     
     # Header record (H)
-    program_name_padded = program_name.ljust(6)[:6]
-    htme_records.append(f"H{program_name_padded}{starting_address}{program_length:06X}")
+    # Convert starting_address from string to int for formatting
+    start_addr_int = int(starting_address, 16)
+    htme_records.append(f"H^{program_name}^{start_addr_int:06X}^{program_length:06X}")
     
     # Text records (T)
     for record in text_records:
         if record["codes"]:
-            address = record["address"]
+            # Convert address to integer and format with 6 hex digits
+            address = int(record["address"], 16)
             length = record["length"]
             object_code = ''.join(record["codes"])
-            htme_records.append(f"T{address}{length:02X}{object_code}")
+            htme_records.append(f"T^{address:06X}^{length:02X}^{object_code}")
     
     # Modification records (M)
     htme_records.extend(modification_records)
@@ -417,7 +419,7 @@ def generate_htme_records(intermediate_lines, location_counter, object_codes):
     
     # Convert to integer and format as 6 hex digits
     first_exec_addr = int(first_executable, 16)
-    htme_records.append(f"E{first_exec_addr:06X}")
+    htme_records.append(f"E^{first_exec_addr:06X}")
     
     # Write HTME records to output file
     with open('data/HTME.txt', 'w') as f:
