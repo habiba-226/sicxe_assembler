@@ -5,10 +5,10 @@ def load_symbol_table(file_path):
     try:
         with open(file_path, 'r') as f:
             for line in f:
-                if line.strip():
+                if line.strip(): # if line is not empty
                     parts = line.strip().split()
                     if len(parts) >= 2:
-                        symbol_table[parts[0]] = parts[1]
+                        symbol_table[parts[0]] = parts[1] # store parts[0] (label) as the key and parts[1] (address) as the value in the dictionary
     except FileNotFoundError:
         print(f"Error: Symbol table file '{file_path}' not found.")
     return symbol_table
@@ -32,8 +32,8 @@ def format2_object_code(op_code, operand):
     """Generate object code for Format 2 instructions"""
     r1, r2 = 0, 0
     if ',' in operand:
-        regs = operand.split(',')
-        r1 = registers.get(regs[0].strip(), 0)
+        regs = operand.split(',') # Split registers
+        r1 = registers.get(regs[0].strip(), 0) # if name not found, default to 0
         r2 = registers.get(regs[1].strip(), 0)
     else:
         r1 = registers.get(operand.strip(), 0)
@@ -45,7 +45,7 @@ def format3_object_code(op_code, operand, symbol_table, current_address, base_ad
     # Default flags
     n, i, x, b, p, e = 1, 1, 0, 0, 0, 0
     
-    # Parse operand
+    # Handle operand,X (indexed addressing)
     indexed = False
     if operand and ',' in operand:
         parts = operand.split(',')
@@ -65,7 +65,7 @@ def format3_object_code(op_code, operand, symbol_table, current_address, base_ad
     # Calculate displacement
     disp = 0
     if operand in symbol_table:
-        target_address = int(symbol_table[operand], 16)
+        target_address = int(symbol_table[operand], 16)  # convert the string from hexadecimal (base 16) to an integer (base 10).
         next_instruction = int(current_address, 16) + 3  # PC points to next instruction
         
         # Try PC-relative first
@@ -73,9 +73,9 @@ def format3_object_code(op_code, operand, symbol_table, current_address, base_ad
         if -2048 <= pc_disp <= 2047:
             # PC-relative addressing works
             p = 1
-            disp = pc_disp & 0xFFF  # Ensure 12-bit value
-        elif base_address is not None:
-            # Try base-relative addressing
+            disp = pc_disp & 0xFFF  # Convert to 12-bit two's complement if negative
+        
+        elif base_address is not None: # if base_address is provided
             base_disp = target_address - base_address
             if 0 <= base_disp <= 4095:
                 b = 1
@@ -90,16 +90,10 @@ def format3_object_code(op_code, operand, symbol_table, current_address, base_ad
     elif operand == '':
         # For instructions like RSUB that don't have operands
         disp = 0
-    elif operand.isdigit() or (operand.startswith('-') and operand[1:].isdigit()):
+    elif operand.isdigit():
         # For immediate values
         disp = int(operand) & 0xFFF
-    elif operand.startswith('0x') or operand.startswith('0X'):
-        # For hexadecimal values
-        try:
-            disp = int(operand, 16) & 0xFFF
-        except ValueError:
-            print(f"Warning: Invalid hexadecimal value {operand}")
-            disp = 0
+
     
     # Calculate object code
     opcode_bits = int(op_code, 0) >> 2  # Discard last 2 bits
@@ -137,14 +131,14 @@ def format4_object_code(op_code, operand, symbol_table):
     address = 0
     if operand in symbol_table:
         address = int(symbol_table[operand], 16)
-    elif operand.isdigit() or (operand.startswith('-') and operand[1:].isdigit()):
+    elif operand.isdigit():
         address = int(operand) & 0xFFFFF
-    elif operand.startswith('0x') or operand.startswith('0X'):
-        try:
-            address = int(operand, 16) & 0xFFFFF
-        except ValueError:
-            print(f"Warning: Invalid hexadecimal value {operand}")
-            address = 0
+    elif operand == '':
+        # For instructions like +RSUB that don't have operands
+        address = 0
+    else:
+        print(f"Warning: Operand '{operand}' not found in symbol table.")
+        address = 0
     
     # Calculate object code
     opcode_bits = int(op_code, 0) >> 2  # Discard last 2 bits
@@ -232,19 +226,18 @@ def pass2(intermediate_file, location_counter_file, symbol_table_file):
     
     # Process each line
     for i, line in enumerate(intermediate_lines):
-        tokens = line.split()
+        tokens = line.split() # Split line into tokens ex ["COPY", "START", "1000"]
         
-        # Parse line
         if len(tokens) == 3:
             label, instruction, operand = tokens
         elif len(tokens) == 2:
             if tokens[0].upper() in instruction_size or tokens[0].startswith('+'):
-                label = ""
+                label = "" # assume no label
                 instruction, operand = tokens
             else:
                 label, instruction = tokens
                 operand = ""
-        elif len(tokens) == 1:
+        elif len(tokens) == 1: # Example RSUB
             label = ""
             instruction = tokens[0]
             operand = ""
@@ -278,10 +271,10 @@ def pass2(intermediate_file, location_counter_file, symbol_table_file):
         for line in listing_lines:
             f.write(f"{line}\n")
 
-    # Now generate HTME records (we'll implement this in the next step)
-    generate_htme_records(intermediate_lines, location_counter, object_codes, symbol_table)
+    # Generate HTME records
+    generate_htme_records(intermediate_lines, location_counter, object_codes)
 
-def generate_htme_records(intermediate_lines, location_counter, object_codes, symbol_table):
+def generate_htme_records(intermediate_lines, location_counter, object_codes):
     """Generate HTME records for the SIC/XE program"""
     if not intermediate_lines or not location_counter or not object_codes:
         print("Error: Missing data for HTME record generation")
@@ -305,7 +298,6 @@ def generate_htme_records(intermediate_lines, location_counter, object_codes, sy
     for i, (line, lc, obj_code) in enumerate(zip(intermediate_lines, location_counter, object_codes)):
         tokens = line.split()
         
-        # Parse the line
         if len(tokens) == 3:
             label, instruction, operand = tokens
         elif len(tokens) == 2:
