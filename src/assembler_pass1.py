@@ -34,6 +34,18 @@ def get_size(instruction, operand):
     return instruction_size.get(instruction, 3)
 
 
+def is_valid_instruction(instruction):
+    """Check if the instruction is valid"""
+    instruction = instruction.upper()
+    
+    # Check if it's a format 4 instruction (starts with +)
+    if instruction.startswith('+'):
+        base_instruction = instruction[1:]
+        return base_instruction in instruction_size
+
+    return instruction in instruction_size
+
+
 def pass1(input_file):
     try:
         with open(input_file, 'r', encoding='utf-8') as f:
@@ -45,8 +57,10 @@ def pass1(input_file):
     intermediate = []
     location_counter = []
     loc = 0
+    invalid_instructions = []  # Track invalid instructions for reporting
 
-    for line in lines:
+    for line_num, line in enumerate(lines, 1):
+        original_line = line.strip()  # Keep original line for error reporting
         line = line.strip()
 
         if ';' in line:
@@ -56,14 +70,16 @@ def pass1(input_file):
 
         tokens = line.split()
 
+        # Skip line numbers if present
         if tokens and tokens[0].isdigit():
-            tokens = tokens[1:]
+            tokens = tokens[1:]  # Remove line number if present
 
+        # Parse the line into label, instruction, and operand
         label, instruction, operand = '', '', ''
         if len(tokens) == 3:
             label, instruction, operand = tokens
         elif len(tokens) == 2:
-            # Check if the first token is an instruction
+            # Check if the first token is likely an instruction
             if tokens[0].upper() in instruction_size or tokens[0].startswith('+'):
                 instruction, operand = tokens
             else:
@@ -72,6 +88,12 @@ def pass1(input_file):
             instruction = tokens[0]
 
         instruction = instruction.upper()
+
+        # Check if the instruction is valid
+        if not is_valid_instruction(instruction) and instruction not in ['START', 'END']:
+            invalid_instructions.append((line_num, original_line, instruction))
+            print(f"Error at line {line_num}: Invalid instruction '{instruction}'")
+            continue  # Skip this line and don't include it in intermediate file
 
         if instruction == 'START':
             try:
@@ -94,6 +116,12 @@ def pass1(input_file):
         location_counter.append(f'{location:04X}')
 
         loc += get_size(instruction, operand)
+
+    # Report summary of invalid instructions
+    if invalid_instructions:
+        print(f"\nFound {len(invalid_instructions)} invalid instructions:")
+        for line_num, line, instruction in invalid_instructions:
+            print(f"Line {line_num}: '{instruction}' in '{line}'")
 
     with open('data/intermediate.txt', 'w', encoding='utf-8') as f:
         for line in intermediate:

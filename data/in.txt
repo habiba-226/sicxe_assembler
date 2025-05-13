@@ -1,8 +1,29 @@
-1    COPY START 0       ;This is a comment
-2    FIRST STL RETADR  ;Save return address
-3    CLOOP JSUB RDREC   ;Read record
-4    BUFFER RESB 4096    ;4096 bytes
-5    RETADR RESW 1       ;1 word
-6    LENGTH RESB 1       ;1 byte
-7    MAXLEN WORD 4096    ;max record length
-8           END COPY     ; End
+1 COPY START 1000
+2 FIRST STL RETADR
+3    CLEAR X
+4    LDA #3         ; Immediate addressing with constant
+5    +LDB #LENGTH    ; Immediate addressing with symbol (Format 4)
+6    BASE EOF     ; Set base register
+7    +JSUB RDREC      ; Format 4, extended call
+8    LDA @BUFFER    ; Indirect addressing
+9    LDX LENGTH,X   ; Indexed addressing
+10    COMP ZERO       ; PC-relative (if in range)
+11    JEQ ENDFIL
+12    +LDA @BUFFER   ; Format 4 with indirect operand (needs M record)
+13    TIXR X          ; Format 2
+14    +LDA #2000       ; Format 4 with immediate constant (noM record)
+15    LDA RDREC        ; Base-relative
+16    RSUB               ; Format 3
+17    TIO                ; Format 1
+18 WLOOP TD OUTPUT
+19    STA BUFFER
+20    HIO                ; Format 1
+21    SIO                ; Format 1
+22 OUTPUT BYTE X'05'
+23 RETADR RESW    1
+24 LENGTH WORD    3
+25 ZERO   WORD    0
+26 BUFFER RESB    4096
+27 EOF BYTE    C'EOF'
+28 RDREC RSUB
+29    END START
