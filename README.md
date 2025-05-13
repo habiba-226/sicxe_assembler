@@ -23,6 +23,7 @@ from from Pass 2
 │   ├── assembler_pass2.py
 │
 └── sicxe.py                # The main emulator file
+└── sicGUI.py  
 ```
 
 ## Setup Instructions
@@ -34,9 +35,9 @@ from from Pass 2
    ```
 
 2. **Run the assembler**:
-   Execute the assembler by running the `emulator.py` file:
+   Execute the assembler by running the `sicGUI.py` file:
    ```
-   python src/emulator.py
+   python sicGUI.py
    ```
 
 ## Usage Guidelines
