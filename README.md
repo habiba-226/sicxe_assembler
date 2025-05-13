@@ -37,7 +37,7 @@ from from Pass 2
 2. **Run the assembler**:
    Execute the assembler by running the `sicGUI.py` file:
    ```
-   python src/emulator.py
+   python sicGUI.py
    ```
 
 ## Usage Guidelines
