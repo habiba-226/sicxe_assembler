@@ -93,7 +93,9 @@ def format3_object_code(op_code, operand, symbol_table, current_address, base_ad
     elif operand.isdigit():
         # For immediate values
         disp = int(operand) & 0xFFF
-
+    elif operand and '=' in operand:
+        # For literal values in format =X'05'
+        disp = 0  # Will be resolved in a more complete implementation
     
     # Calculate object code
     opcode_bits = int(op_code, 0) >> 2  # Discard last 2 bits
@@ -151,6 +153,22 @@ def format4_object_code(op_code, operand, symbol_table):
     
     return f"{first_byte:02X}{second_byte:02X}{third_byte:02X}{fourth_byte:02X}"
 
+def format4L_object_code(op_code, operand):
+
+    value = 0
+    if ',' in operand:
+        parts = operand.split(',')
+        register = parts[0].strip()
+        literal_part = parts[1].strip()
+        
+        if literal_part.startswith('=X\'') and literal_part.endswith('\''):
+            hex_value = literal_part[3:-1]
+            value = int(hex_value, 16)
+            
+    
+    reg_code = registers.get(register, 0)
+    return f"{int(op_code, 0):02X}{reg_code:01X}0{value:04X}"
+
 def process_byte_directive(operand):
     """Process BYTE directive and return the object code"""
     if operand.startswith("C'") and operand.endswith("'"):
@@ -180,6 +198,12 @@ def generate_object_code(instruction, operand, symbol_table, current_address, ba
         base_instruction = instruction[1:]
         if base_instruction in op_codes:
             return format4_object_code(op_codes[base_instruction], operand, symbol_table)
+        return "ERROR"
+    
+    # Check for Format 4L instructions
+    if instruction in ['LITLD', 'LITAD', 'LITSB', 'LITCMP']:
+        if instruction in op_codes:
+            return format4L_object_code(op_codes[instruction], operand)
         return "ERROR"
     
     # Directives
@@ -255,7 +279,7 @@ def pass2(intermediate_file, location_counter_file, symbol_table_file):
         object_code = generate_object_code(instruction, operand, symbol_table, current_address, base_address)
         object_codes.append(object_code)
 
-                # Create listing line
+        # Create listing line
         listing_line = f"{current_address}\t{label}\t{instruction}\t{operand}\t{object_code}"
         listing_lines.append(listing_line)
 
@@ -341,7 +365,7 @@ def generate_htme_records(intermediate_lines, location_counter, object_codes):
                         mod_address = int(lc, 16) + 1
                         # Standard length for modification is 5 half-bytes (20 bits)
                         mod_length = "05"
-                        modification_records.append(f"M{mod_address:06X}{mod_length}")
+                        modification_records.append(f"M^{mod_address:06X}^{mod_length}")
                 else:
                     # For non-immediate format 4 instructions, always create M record
                     mod_address = int(lc, 16) + 1

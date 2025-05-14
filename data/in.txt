@@ -4,6 +4,7 @@
 4    LDA #3         ; Immediate addressing with constant
 5    +LDB #LENGTH    ; Immediate addressing with symbol (Format 4)
 6    BASE EOF     ; Set base register
+7    LITAD A,=X'05'
 7    +JSUB RDREC      ; Format 4, extended call
 8    LDA @BUFFER    ; Indirect addressing
 9    LDX LENGTH,X   ; Indexed addressing
@@ -28,5 +29,9 @@
 28 EOF BYTE    C'EOF'
 29 RDREC RSUB
 30    END START
+
+
+
+
 
 

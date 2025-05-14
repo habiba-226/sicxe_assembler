@@ -17,7 +17,13 @@ op_codes = {
     'LDA': '0x00', 'LDB': '0x68', 'LDCH': '0x50','LDF': '0x70', 'LDL': '0x08','LDS': '0x6C','LDT': '0x74', 'LDX': '0x04','LPS': '0xD0', 
     'MUL': '0x20','MULF': '0x60','OR': '0x44','RD': '0xD8', 'RSUB': '0x4C', 'SSK': '0xEC',
     'STA': '0x0C','STB': '0x78', 'STCH': '0x54','STF': '0x80','STI': '0xD4', 'STL': '0x14','STS': '0x7C','STSW': '0xE8','STT': '0x84','STX': '0x10',
-    'SUB': '0x1C','SUBF': '0x5C','TD': '0xE0', 'TIX': '0x2C', 'WD': '0xDC'
+    'SUB': '0x1C','SUBF': '0x5C','TD': '0xE0', 'TIX': '0x2C', 'WD': '0xDC','LITLD': '0xE4',   
+    'LITAD': '0xBC', 
+    'LITSB': '0x8C',
+    'LITCMP': '0xFC'
+
+    # Format 4L
+    
 }
 
 instruction_size = {
@@ -35,7 +41,10 @@ instruction_size = {
     'LDA': 3, 'LDB': 3, 'LDCH': 3,'LDF': 3, 'LDL': 3,'LDS': 3,'LDT': 3, 'LDX': 3,'LPS': 3,
     'MUL': 3,'MULF': 3,'OR': 3,'RD': 3, 'RSUB': 3,'SSK': 3, 
     'STA': 3,'STB': 3, 'STCH': 3,'STF': 3,'STI': 3, 'STL': 3,'STS': 3,'STSW': 3,'STT': 3, 'STX': 3,
-    'SUB': 3,'SUBF': 3,'TD': 3, 'TIX': 3, 'WD': 3,
+    'SUB': 3,'SUBF': 3,'TD': 3, 'TIX': 3, 'WD': 3, 'LITAD': 4,
+    'LITSB': 4,
+    'LITLD': 4,
+    'LITCMP': 4,
 
     # Directives
     'START': 0, 'BASE': 0, 'END': 0,

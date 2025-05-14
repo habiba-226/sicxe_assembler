@@ -1,4 +1,5 @@
-from src.instructions import instruction_size
+from src.instructions import instruction_size, op_codes
+
 
 symbol_table = {}
 
@@ -10,6 +11,9 @@ def get_size(instruction, operand):
         if base_instruction in instruction_size:
             return 4
         return 3
+    
+    if instruction in ['LITLD', 'LITAD', 'LITSB', 'LITCMP']:
+        return 4
 
     if instruction == 'RESW':
         try:
@@ -42,6 +46,11 @@ def is_valid_instruction(instruction):
     if instruction.startswith('+'):
         base_instruction = instruction[1:]
         return base_instruction in instruction_size
+    
+    # Check for format 4L instructions
+    format4L_instructions = ['LITLD', 'LITAD', 'LITSB', 'LITCMP']
+    if instruction in format4L_instructions:
+        return True
 
     return instruction in instruction_size
 
@@ -80,7 +89,7 @@ def pass1(input_file):
             label, instruction, operand = tokens
         elif len(tokens) == 2:
             # Check if the first token is likely an instruction
-            if tokens[0].upper() in instruction_size or tokens[0].startswith('+'):
+            if is_valid_instruction(tokens[0]):
                 instruction, operand = tokens
             else:
                 label, instruction = tokens
